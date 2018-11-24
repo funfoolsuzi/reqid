@@ -11,32 +11,21 @@ const (
 	LogFieldKeyReqID = "requestId"
 )
 
-var (
-	loglvl = logrus.DebugLevel
-)
-
-// SetReqIDGlobalLogLevel can set log level for newly created FieldLogger instance
-func SetReqIDGlobalLogLevel(lvl logrus.Level) {
-	loglvl = lvl
-}
-
 // NewLoggerFromReqIDStr creates  a *logrus.Entry that has requestID as a field. A new LogField inst will be created if log is nil
-func NewLoggerFromReqIDStr(reqID string, log logrus.FieldLogger) logrus.FieldLogger {
+func NewLoggerFromReqIDStr(reqID string, ancestorLogger logrus.FieldLogger) logrus.FieldLogger {
 
-	if log == nil {
-		nlog := logrus.New()
-		nlog.SetLevel(loglvl)
-		log = nlog.WithField(LogFieldKeyReqID, reqID)
-		log.Debugln("New logrus FieldLogger initiated")
-		return log
+	var retLogger logrus.FieldLogger = logrus.StandardLogger()
+
+	if ancestorLogger != nil {
+		retLogger = ancestorLogger
 	}
 
-	return log.WithField(LogFieldKeyReqID, reqID)
+	return retLogger.WithField(LogFieldKeyReqID, reqID)
 }
 
 // NewLoggerFromReqIDCtx creates a *logrus.Entry that has requestID as a field.  A new LogField inst will be created if log is ni
-func NewLoggerFromReqIDCtx(ctx context.Context, log logrus.FieldLogger) logrus.FieldLogger {
+func NewLoggerFromReqIDCtx(ctx context.Context, ancestorLogger logrus.FieldLogger) logrus.FieldLogger {
 	reqID := GetReqID(ctx)
 
-	return NewLoggerFromReqIDStr(reqID, log)
+	return NewLoggerFromReqIDStr(reqID, ancestorLogger)
 }
